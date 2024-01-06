@@ -42,6 +42,12 @@ public class Player extends Entity {
         if (PRESSED_KEYS.get((char)21)) {
             angle = (float)((angle - delta_angle) % (2*Math.PI));
         }
+        if (angle > 0 && angle > Math.PI) {
+            angle -= Math.PI*2;
+        }
+        else if (angle < 0 && angle < -Math.PI) {
+            angle += Math.PI*2;
+        }
     }
 
     private void move() {

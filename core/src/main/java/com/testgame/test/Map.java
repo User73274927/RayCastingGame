@@ -4,15 +4,24 @@ package com.testgame.test;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.testgame.test.entities.Player;
+import com.testgame.test.objects.Projected;
+import com.testgame.test.objects.Sprite;
 import com.testgame.test.utils.Constants;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
+import static com.testgame.test.utils.Constants.TILE_SIZE;
+
 public class Map {
-    final int rows = Constants.str_map[0].length();
-    final int cols = Constants.str_map.length;
-    final int cell_size = Constants.TILE_SIZE;
+    public final int rows = Constants.str_map[0].length();
+    public final int cols = Constants.str_map.length;
+
+    private final HashMap<Character, TextureType> texture_dict = new HashMap<>();
+    private ArrayList<Sprite> static_sprites = new ArrayList<>();
     private ArrayList<Wall> walls;
 
     public Texture wall1_texture = new Texture("wall1.png");
@@ -20,54 +29,66 @@ public class Map {
     public Texture wall3_texture = new Texture("wall3.png");
 
     public Map() {
+        initTextureDict();
         this.walls = createStrMap();
+    }
+
+    private void initTextureDict() {
+        texture_dict.put('1', new TextureType(wall1_texture, ObjectType.WALL));
+        texture_dict.put('2', new TextureType(wall2_texture, ObjectType.WALL));
+        texture_dict.put('3', new TextureType(wall3_texture, ObjectType.WALL));
+        texture_dict.put('i', new TextureType(new Texture("Doom-sprites/candlestick.png"), ObjectType.SPRITE));
+        texture_dict.put('b', new TextureType(new Texture("Doom-sprites/bar-sprite.png"), ObjectType.SPRITE));
     }
 
     private ArrayList<Wall> createMap() {
         ArrayList<Wall> walls = new ArrayList<>();
-        int x = 0, y = -cell_size;
+        int x = 0, y = -TILE_SIZE;
 
         for (int i = 0; i < rows * cols; i++) {
             if (i % rows == 0) {
-                y += cell_size;
+                y += TILE_SIZE;
                 x = 0;
             }
-            if (Constants.map[i/ rows][i% rows] == 1) {
+            if (Constants.map[i/rows][i%rows] == 1) {
                 walls.add(new Wall(x, y));
             }
-            x += cell_size;
+            x += TILE_SIZE;
         }
         return walls;
     }
 
     private ArrayList<Wall> createStrMap() {
         ArrayList<Wall> walls = new ArrayList<>();
-        int x = 0, y = -cell_size;
+        int x = 0, y = -TILE_SIZE;
 
         for (int i = 0; i < rows * cols; i++) {
             if (i % rows == 0) {
-                y += cell_size;
+                y += TILE_SIZE;
                 x = 0;
             }
-            char wall_type = Constants.str_map[i/ rows].charAt(i% rows);
-            Texture texture = null;
+            char wall_type = Constants.str_map[i/rows].charAt(i%rows);
+            float height = (float) (1.5* TILE_SIZE);
+            TextureType texture_type = texture_dict.getOrDefault(wall_type, null);
 
-            if (wall_type == '1') {
-                texture = wall1_texture;
+            if (texture_type != null) {
+                if (texture_type.type() == ObjectType.WALL) {
+                    Wall wall = new Wall(x, y);
+                    wall.height = height;
+                    wall.texture = texture_type.texture();
+                    walls.add(wall);
+                }
+                else if (texture_type.type() == ObjectType.SPRITE) {
+                    Sprite sprite = new Sprite()
+                        .buildTexture(texture_type.texture())
+                        .buildPos(x + (float) TILE_SIZE /2, y + (float) TILE_SIZE /2);
+                    if (wall_type == 'b') {
+                        sprite.buildHeight(20);
+                    }
+                    static_sprites.add(sprite);
+                }
             }
-            else if (wall_type == '2') {
-                texture = wall2_texture;
-            }
-            else if (wall_type == '3') {
-                texture = wall3_texture;
-            }
-
-            if (texture != null) {
-                Wall wall = new Wall(x, y);
-                wall.texture = texture;
-                walls.add(wall);
-            }
-            x += cell_size;
+            x += TILE_SIZE;
         }
         return walls;
     }
@@ -75,7 +96,7 @@ public class Map {
     public void draw(ShapeRenderer ctx) {
         ctx.setColor(Color.BLUE);
         for (Wall wall : walls) {
-            ctx.rect(wall.x(), wall.y(), cell_size, cell_size);
+            ctx.rect(wall.x(), wall.y(), TILE_SIZE, TILE_SIZE);
         }
     }
 
@@ -83,4 +104,12 @@ public class Map {
         return walls;
     }
 
+    public List<Sprite> getStaticSprites() {
+        return static_sprites;
+    }
+
 }
+
+record TextureType(Texture texture, ObjectType type) {}
+
+enum ObjectType { WALL, SPRITE, ANIMATED_SPRITE }
