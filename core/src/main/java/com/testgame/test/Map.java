@@ -4,13 +4,10 @@ package com.testgame.test;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.testgame.test.entities.Player;
-import com.testgame.test.objects.Projected;
 import com.testgame.test.objects.Sprite;
 import com.testgame.test.utils.Constants;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,7 +19,7 @@ public class Map {
 
     private final HashMap<Character, TextureType> texture_dict = new HashMap<>();
     private ArrayList<Sprite> static_sprites = new ArrayList<>();
-    private ArrayList<Wall> walls;
+    private ArrayList<Wall> walls = new ArrayList<>();
 
     public Texture wall1_texture = new Texture("wall1.png");
     public Texture wall2_texture = new Texture("wall2.png");
@@ -30,7 +27,7 @@ public class Map {
 
     public Map() {
         initTextureDict();
-        this.walls = createStrMap();
+        initMap();
     }
 
     private void initTextureDict() {
@@ -58,7 +55,7 @@ public class Map {
         return walls;
     }
 
-    private ArrayList<Wall> createStrMap() {
+    private ArrayList<Wall> initMap() {
         ArrayList<Wall> walls = new ArrayList<>();
         int x = 0, y = -TILE_SIZE;
 
